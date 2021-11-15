@@ -710,6 +710,8 @@ int32_t NvVkDecoder::StartVideoSequence(VkParserDetectedVideoFormat* pVideoForma
     result = vk::CreateVideoSessionKHR(m_pVulkanDecodeContext.dev, &createInfo, NULL, &m_vkVideoDecodeSession);
     assert(result == VK_SUCCESS);
 
+    m_sendResetUpdate = 1;
+
     const uint32_t maxMemReq = 8;
     uint32_t decodeSessionMemoryRequirementsCount = 0;
     VkMemoryRequirements2 memoryRequirements[maxMemReq];
@@ -1195,6 +1197,16 @@ int NvVkDecoder::DecodePictureWithParameters(VkParserPerFrameDecodeParameters* p
 
     vk::CmdResetQueryPool(pFrameData->commandBuffer, frameSynchronizationInfo.queryPool, frameSynchronizationInfo.startQueryId, frameSynchronizationInfo.numQueries);
     vk::CmdBeginVideoCodingKHR(pFrameData->commandBuffer, &decodeBeginInfo);
+
+    if (m_sendResetUpdate) {
+        const VkVideoCodingControlInfoKHR controlInfo = {
+            VK_STRUCTURE_TYPE_VIDEO_CODING_CONTROL_INFO_KHR,
+            nullptr,
+            VK_VIDEO_CODING_CONTROL_RESET_BIT_KHR,
+        };
+        vk::CmdControlVideoCodingKHR(pFrameData->commandBuffer, &controlInfo);
+        m_sendResetUpdate = 0;
+    }
 
     const VkDependencyInfoKHR dependencyInfo = {
         VK_STRUCTURE_TYPE_DEPENDENCY_INFO_KHR,

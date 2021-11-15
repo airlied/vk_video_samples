@@ -185,5 +185,6 @@ private:
     VkSharedBaseObj<StdVideoPictureParametersSet>              m_lastSpsPictureParametersQueue;
     VkSharedBaseObj<StdVideoPictureParametersSet>              m_lastPpsPictureParametersQueue;
     VkSharedBaseObj<VkParserVideoPictureParameters>            currentPictureParameters;
+    uint32_t m_sendResetUpdate : 1;
     uint32_t m_dumpDecodeData : 1;
 };
